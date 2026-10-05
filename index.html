@@ -1,0 +1,1419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Adil Ulu: economics student at UT Austin (Finance minor, Class of 2028). Quant research, financial modeling, and an interactive crack-spread strategy lab.">
+<meta property="og:title" content="Adil Ulu">
+<meta property="og:description" content="Adil Ulu: economics student at UT Austin (Finance minor, Class of 2028). Quant research, financial modeling, and an interactive crack-spread strategy lab.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0A0E13" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FBEFE3" media="(prefers-color-scheme: light)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23FFA028'/%3E%3Ctext x='32' y='42' font-family='monospace' font-weight='700' font-size='24' text-anchor='middle' fill='%231A1004'%3EULU%3C/text%3E%3C/svg%3E">
+<title>Adil Ulu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400..700&family=Martian+Mono:wdth,wght@75..100,400..700&display=swap">
+<style>
+/* Layout: a market terminal. Sticky command bar + function keys, a ticker tape, then stacked panels
+   addressed by mnemonic (DES, POS, LAB, RSCH, TAPE, SKLS, OFF, MSG). Dark = terminal, light = pink-paper print edition. */
+:root {
+  color-scheme: dark;
+  --bg: #0A0E13;
+  --panel: #10161D;
+  --panel-2: #172029;
+  --line: #222C37;
+  --line-2: #33404D;
+  --fg: #ECE6DA;
+  --fg-2: #AEB5BD;
+  --muted: #7F8B97;
+  --accent: #FFA028;
+  --accent-ink: #1A1004;
+  --accent-wash: rgba(255, 160, 40, .12);
+  --up: #34C77B;
+  --down: #F2615E;
+  --s1: #CF7A14;
+  --s2: #3987E5;
+  --s3: #199E70;
+  --grid: #1D2630;
+  --axis: #3A4754;
+  --font-display: "Archivo", "Arial Narrow", "Helvetica Neue", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #FBEFE3; --panel: #FFF8F1; --panel-2: #F6E6D7; --line: #E8D5C3; --line-2: #D5BEA9;
+    --fg: #1F1A16; --fg-2: #554B43; --muted: #7A6D62;
+    --accent: #B4500F; --accent-ink: #FFF8F1; --accent-wash: rgba(180, 80, 15, .10);
+    --up: #0B7A3E; --down: #C0302E;
+    --s1: #C2620C; --s2: #2A6FC9; --s3: #1A9A6C;
+    --grid: #F0E2D4; --axis: #CDB6A1;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #FBEFE3; --panel: #FFF8F1; --panel-2: #F6E6D7; --line: #E8D5C3; --line-2: #D5BEA9;
+  --fg: #1F1A16; --fg-2: #554B43; --muted: #7A6D62;
+  --accent: #B4500F; --accent-ink: #FFF8F1; --accent-wash: rgba(180, 80, 15, .10);
+  --up: #0B7A3E; --down: #C0302E;
+  --s1: #C2620C; --s2: #2A6FC9; --s3: #1A9A6C;
+  --grid: #F0E2D4; --axis: #CDB6A1;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 15px/1.55 var(--font-body); }
+a { color: inherit; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[tabindex="-1"]:focus { outline: none; }
+.wrap { max-width: 1240px; margin-inline: auto; padding-inline: clamp(16px, 3vw, 32px); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 16px; top: -60px; z-index: 100; background: var(--accent); color: var(--accent-ink); padding: 8px 12px; font: 600 12px var(--font-mono); }
+.skip:focus { top: 8px; }
+.mono { font-family: var(--font-mono); }
+
+/* ---------- top bar ---------- */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar { display: flex; align-items: center; gap: 12px; height: 54px; }
+.logo { display: flex; align-items: center; gap: 9px; text-decoration: none; flex: 0 0 auto; }
+.logo-tkr { font: 700 13px/1 var(--font-mono); background: var(--accent); color: var(--accent-ink); padding: 7px 8px; letter-spacing: .06em; }
+.logo-sub { font: 500 10.5px/1.25 var(--font-mono); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.cmd { position: relative; flex: 1 1 auto; min-width: 0; max-width: 540px; display: flex; align-items: stretch; height: 36px; border: 1px solid var(--line-2); background: var(--panel); }
+.cmd:focus-within { border-color: var(--accent); }
+.cmd-prompt { display: grid; place-items: center; font: 700 12px var(--font-mono); color: var(--accent); padding-inline: 11px 4px; }
+.cmd input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--fg); font: 500 12.5px/1 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; padding: 0 6px; }
+.cmd input::placeholder { text-transform: none; letter-spacing: 0; color: var(--muted); font-family: var(--font-body); font-size: 13.5px; }
+.go { font: 700 11px/1 var(--font-mono); background: var(--accent); color: var(--accent-ink); border: 0; padding-inline: 13px; cursor: pointer; letter-spacing: .08em; }
+.go:hover { filter: brightness(1.08); }
+.cmd-menu { position: absolute; top: calc(100% + 4px); left: -1px; right: -1px; z-index: 60; margin: 0; padding: 4px 0; list-style: none; background: var(--panel); border: 1px solid var(--line-2); max-height: min(360px, 60vh); overflow: auto; box-shadow: 0 12px 30px rgba(0,0,0,.28); }
+.cmd-opt { display: grid; grid-template-columns: 60px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; }
+.cmd-opt b { font: 700 12px var(--font-mono); color: var(--accent); letter-spacing: .05em; }
+.cmd-opt span { color: var(--fg-2); font-size: 13.5px; }
+.cmd-opt kbd { font: 600 10px var(--font-mono); color: var(--muted); border: 1px solid var(--line-2); padding: 2px 5px; }
+.cmd-opt[aria-selected="true"] { background: var(--accent-wash); }
+.cmd-opt[aria-selected="true"] span { color: var(--fg); }
+.clock { display: flex; align-items: center; gap: 8px; font: 500 11px var(--font-mono); color: var(--fg-2); white-space: nowrap; margin-left: auto; letter-spacing: .03em; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; }
+.dot.open { background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 22%, transparent); }
+.dot.closed { background: var(--down); }
+.theme-btn { flex: 0 0 auto; display: flex; border: 1px solid var(--line-2); background: transparent; padding: 0; cursor: pointer; height: 30px; }
+.theme-btn span { display: grid; place-items: center; padding-inline: 8px; font: 600 10px var(--font-mono); letter-spacing: .08em; color: var(--muted); }
+.theme-btn span.on { background: var(--fg); color: var(--bg); }
+.fkeys { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding-bottom: 8px; }
+.fkeys::-webkit-scrollbar { display: none; }
+.fkeys a { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 6px; text-decoration: none; color: var(--fg-2); border: 1px solid transparent; }
+.fkeys a:hover { border-color: var(--line); background: var(--panel); color: var(--fg); }
+.fkeys a[aria-current="true"] { border-color: var(--line-2); background: var(--panel); color: var(--fg); }
+.fk { display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid var(--line-2); font: 600 10px/1 var(--font-mono); color: var(--muted); }
+.fk-mn { font: 700 11.5px/1 var(--font-mono); color: var(--accent); letter-spacing: .06em; }
+.fk-name { font-size: 13px; }
+
+/* ---------- ticker tape ---------- */
+.tape { overflow: hidden; background: var(--panel); border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tape-track { display: inline-flex; animation: tape 80s linear infinite; }
+.tape:hover .tape-track { animation-play-state: paused; }
+@keyframes tape { to { transform: translateX(-50%); } }
+.ti { display: inline-flex; align-items: baseline; gap: 8px; padding: 8px 18px; border-right: 1px solid var(--line); font: 500 11.5px/1.2 var(--font-mono); color: var(--fg-2); }
+.ti b { color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+.ti .v { color: var(--fg); }
+.ti .up { color: var(--up); }
+
+/* ---------- panels ---------- */
+main { display: grid; gap: 20px; padding-block: 24px 40px; }
+.panel { background: var(--panel); border: 1px solid var(--line); min-width: 0; scroll-margin-top: 112px; transition: outline-color .6s ease; outline: 2px solid transparent; outline-offset: 3px; }
+.panel.flash { outline-color: var(--accent); transition: none; }
+.ph { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.mn { font: 700 11px/1 var(--font-mono); background: var(--accent); color: var(--accent-ink); padding: 5px 7px; letter-spacing: .08em; }
+.ph h2 { margin: 0; font: 600 12px/1.2 var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--fg); }
+.ph-meta { margin-left: auto; font: 500 11px var(--font-mono); color: var(--muted); letter-spacing: .03em; }
+.pb { padding: 22px 20px; }
+.section-intro { margin: 0 0 18px; max-width: 70ch; color: var(--fg-2); }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.label { font: 500 10.5px/1.4 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+/* ---------- DES ---------- */
+.des-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); }
+.des-main { padding: 30px 26px 30px; border-right: 1px solid var(--line); min-width: 0; }
+.eyebrow { margin: 0 0 16px; font: 500 11px/1.7 var(--font-mono); color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+.name { margin: 0 0 22px; font-family: var(--font-display); font-weight: 860; font-stretch: 70%; font-size: clamp(68px, 12vw, 156px); line-height: .84; letter-spacing: -.005em; text-transform: uppercase; text-wrap: balance; }
+.cursor { display: inline-block; width: .36em; height: .74em; background: var(--accent); margin-left: .07em; vertical-align: -.01em; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.lede { margin: 0 0 24px; max-width: 58ch; font-size: 17px; line-height: 1.6; color: var(--fg-2); }
+.lede strong { color: var(--fg); font-weight: 600; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.status { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid var(--line-2); font: 600 11px var(--font-mono); letter-spacing: .04em; color: var(--fg); text-transform: uppercase; }
+.status .dot { background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 22%, transparent); }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--line-2); background: transparent; color: var(--fg); text-decoration: none; font: 600 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.btn:hover { border-color: var(--fg-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.07); }
+.quote { margin: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto repeat(3, 1fr); }
+.quote-h { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 10px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+.q { padding: 16px 18px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 5px; align-content: start; min-width: 0; }
+.q:nth-child(even) { border-right: 1px solid var(--line); }
+.q:nth-last-child(-n+2) { border-bottom: 0; }
+.q dt { font: 500 10.5px var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.q dd { margin: 0; font: 600 32px/1.05 var(--font-body); letter-spacing: -.01em; }
+.q dd small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.q dd.up { color: var(--up); }
+.q .note { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+
+/* ---------- POS ---------- */
+.pos { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 6px 28px; padding: 24px 20px; border-bottom: 1px solid var(--line); }
+.pos:last-child { border-bottom: 0; }
+.pos-side { display: grid; gap: 6px; align-content: start; }
+.pos-tkr { font: 700 13px var(--font-mono); color: var(--accent); letter-spacing: .06em; }
+.pos-dates { font: 500 11px/1.5 var(--font-mono); color: var(--fg-2); }
+.pos-dur { font: 500 11px var(--font-mono); color: var(--muted); }
+.pos h3 { margin: 0; font: 650 21px/1.25 var(--font-body); letter-spacing: -.005em; }
+.pos-where { margin: 2px 0 12px; color: var(--fg-2); }
+.pos ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; max-width: 80ch; }
+.pos li::marker { color: var(--accent); content: "▸  "; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.chip { font: 500 11px/1.3 var(--font-mono); padding: 5px 8px; border: 1px solid var(--line-2); color: var(--fg-2); }
+.chip b { color: var(--fg); font-weight: 700; }
+.jump { display: inline-block; margin-top: 14px; font: 600 11px var(--font-mono); color: var(--accent); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; }
+.jump:hover { text-decoration: underline; }
+.rev { margin-top: 16px; max-width: 460px; display: grid; gap: 7px; }
+.rev-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); align-items: center; gap: 10px; font: 500 11px var(--font-mono); color: var(--muted); }
+.rev-track { display: flex; align-items: center; gap: 8px; }
+.rev-bar { height: 12px; width: var(--w); background: var(--s1); border-radius: 0 4px 4px 0; }
+.rev-v { color: var(--fg); font-weight: 600; }
+.rev-cap { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+
+/* ---------- LAB ---------- */
+.lab-grid { display: grid; grid-template-columns: minmax(0, 1fr) 310px; }
+.lab-main { padding: 18px 20px 20px; border-right: 1px solid var(--line); position: relative; min-width: 0; }
+.lab-intro { margin: 0 0 18px; max-width: 72ch; color: var(--fg-2); }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; padding-bottom: 16px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+.ctl { display: grid; gap: 6px; flex: 1 1 150px; min-width: 140px; }
+.ctl label { display: flex; justify-content: space-between; gap: 8px; font: 500 10.5px var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+.ctl output { color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; height: 22px; }
+.seed { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.seed-v { font: 500 11px var(--font-mono); color: var(--muted); }
+.chart-h { display: flex; align-items: baseline; gap: 6px 16px; flex-wrap: wrap; margin: 6px 0 6px; }
+.chart-h h3 { margin: 0; font: 600 13.5px var(--font-body); }
+.chart-h .sub { color: var(--muted); font-size: 12.5px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-left: auto; font-size: 12px; color: var(--fg-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.k-line { width: 14px; height: 2px; background: var(--s1); }
+.k-rect { width: 10px; height: 10px; }
+.k-long { background: color-mix(in srgb, var(--s2) 45%, transparent); }
+.k-short { background: color-mix(in srgb, var(--s3) 45%, transparent); }
+.k-band { width: 14px; height: 0; border-top: 1px solid var(--fg-2); }
+.k-est { background: color-mix(in srgb, var(--fg) 10%, transparent); }
+.chart { position: relative; touch-action: pan-y; cursor: crosshair; }
+.chart:focus-visible { outline-offset: 4px; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart + .chart-h { margin-top: 18px; }
+svg text { fill: var(--muted); font: 500 10px var(--font-mono); }
+svg .t-strong { fill: var(--fg); font-weight: 700; font-size: 11px; }
+.gl { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+.ax { stroke: var(--axis); stroke-width: 1; shape-rendering: crispEdges; }
+.ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.ln-1 { stroke: var(--s1); }
+.ar-1 { fill: var(--s1); opacity: .1; }
+.w-long { fill: var(--s2); opacity: .22; }
+.w-short { fill: var(--s3); opacity: .22; }
+.w-est { fill: var(--fg); opacity: .05; }
+.band { stroke: var(--fg-2); stroke-width: 1; opacity: .6; shape-rendering: crispEdges; }
+.xh { stroke: var(--fg-2); stroke-width: 1; shape-rendering: crispEdges; }
+.mk { fill: var(--s1); stroke: var(--panel); stroke-width: 2; }
+.tip { position: absolute; z-index: 6; pointer-events: none; min-width: 168px; padding: 9px 11px; background: var(--panel-2); border: 1px solid var(--line-2); box-shadow: 0 10px 24px rgba(0,0,0,.25); font-size: 12.5px; }
+.tip-h { font: 600 10.5px var(--font-mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+.tip-r { display: grid; grid-template-columns: 12px auto 1fr; align-items: center; gap: 8px; line-height: 1.7; }
+.tip-r b { font-weight: 650; color: var(--fg); font-variant-numeric: tabular-nums; }
+.tip-r i { font-style: normal; color: var(--fg-2); }
+.tip-k { width: 12px; height: 2px; background: var(--s1); }
+.tip-k.none { background: transparent; }
+.lab-side { display: grid; align-content: start; min-width: 0; }
+.side-h { padding: 12px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; }
+.tile { padding: 14px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 3px; min-width: 0; }
+.tile:nth-child(odd) { border-right: 1px solid var(--line); }
+.tile .v { font: 600 22px/1.15 var(--font-body); }
+.tile .v.neg { color: var(--down); }
+.study { background: var(--accent-wash); border-bottom: 1px solid var(--line); }
+.study dl { margin: 0; padding: 4px 18px 14px; display: grid; }
+.study dl div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.study dl div:last-child { border-bottom: 0; }
+.study dt { color: var(--fg-2); }
+.study dd { margin: 0; font-weight: 650; text-align: right; font-variant-numeric: tabular-nums; }
+.method { padding: 14px 18px 18px; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.method p { margin: 6px 0 0; }
+.blotter { border-top: 1px solid var(--line); }
+.blotter .side-h { border-bottom: 1px solid var(--line); }
+.tbl-wrap { overflow: auto; max-height: 300px; }
+table { border-collapse: collapse; width: 100%; font: 500 11.5px var(--font-mono); font-variant-numeric: tabular-nums; }
+thead th { position: sticky; top: 0; background: var(--panel); z-index: 1; }
+th { font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: 10px; text-align: right; padding: 9px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 7px 14px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; color: var(--fg-2); }
+th:first-child, td:first-child, .tl { text-align: left; }
+td.gain { color: var(--up); }
+td.loss { color: var(--down); }
+.side-tag { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
+.side-tag::before { content: ""; width: 8px; height: 8px; }
+.side-tag.long::before { background: color-mix(in srgb, var(--s2) 55%, transparent); }
+.side-tag.short::before { background: color-mix(in srgb, var(--s3) 55%, transparent); }
+
+/* ---------- RSCH ---------- */
+.rs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rs { padding: 22px 20px 24px; min-width: 0; display: grid; gap: 14px; align-content: start; }
+.rs + .rs { border-left: 1px solid var(--line); }
+.rs-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.rs h3 { margin: 0; font: 650 20px/1.25 var(--font-body); text-wrap: balance; }
+.spec { margin: 0; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); font: 500 12px/1.7 var(--font-mono); color: var(--fg); overflow-x: auto; white-space: nowrap; }
+.spec .c { color: var(--muted); }
+.finding { margin: 0; padding: 12px 14px; border-left: 2px solid var(--accent); background: var(--accent-wash); }
+.finding .label { display: block; margin-bottom: 4px; color: var(--accent); }
+.rs ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--fg-2); }
+.rs li::marker { color: var(--accent); content: "▸  "; }
+.flow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; }
+.stmt { border: 1px solid var(--line-2); padding: 10px 8px; text-align: center; background: var(--bg); min-width: 0; }
+.stmt b { display: block; font: 700 12px var(--font-mono); color: var(--accent); letter-spacing: .06em; }
+.stmt span { display: block; font-size: 12px; color: var(--fg-2); line-height: 1.3; margin-top: 3px; }
+.arrow { display: grid; justify-items: center; font: 500 9.5px/1.3 var(--font-mono); color: var(--muted); text-align: center; }
+.arrow::after { content: "→"; font-size: 15px; color: var(--fg-2); }
+.feeds { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- TAPE (timeline) ---------- */
+.tl-scroll { overflow-x: auto; }
+.tl-chart { cursor: default; }
+.tl-chart svg { display: block; }
+.bar-g { cursor: pointer; outline: none; }
+.bar-g:focus-visible .bar-r, .bar-g:hover .bar-r { filter: brightness(1.15); }
+.bar-g:focus-visible .bar-hit { stroke: var(--accent); stroke-width: 1; }
+.c-work { fill: var(--s1); }
+.c-research { fill: var(--s2); }
+.c-edu { fill: var(--s3); }
+.k-work { background: var(--s1); } .k-research { background: var(--s2); } .k-edu { background: var(--s3); }
+.today-l { stroke: var(--accent); stroke-width: 1; shape-rendering: crispEdges; }
+svg .t-acc { fill: var(--accent); font-weight: 700; }
+svg .t-row { fill: var(--fg); font: 500 12px var(--font-body); }
+svg .t-row-sub { fill: var(--muted); font: 400 11px var(--font-body); }
+
+/* ---------- SKLS / OFF ---------- */
+.wl { width: 100%; }
+.wl td, .wl th { white-space: normal; }
+.wl td { color: var(--fg); font-family: var(--font-body); font-size: 14px; text-align: left; vertical-align: top; }
+.wl td.code { font: 700 11.5px var(--font-mono); color: var(--accent); letter-spacing: .05em; width: 76px; padding-top: 10px; }
+.wl td.where { color: var(--fg-2); font-size: 13px; }
+.wl th { text-align: left; }
+.wl tr:last-child td { border-bottom: 0; }
+.wl-group td { background: var(--panel-2); font: 600 10px var(--font-mono) !important; color: var(--muted) !important; text-transform: uppercase; letter-spacing: .1em; padding-block: 6px; }
+.off { display: grid; gap: 0; }
+.off-row { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-bottom: 1px solid var(--line); align-items: baseline; }
+.off-row:last-child { border-bottom: 0; }
+.off-row p { margin: 0; }
+.off-v { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.off-v span { white-space: nowrap; }
+.rank { font: 600 12px var(--font-mono); color: var(--accent); }
+
+/* ---------- MSG ---------- */
+.msg { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.msg-main { padding: 28px 22px; border-right: 1px solid var(--line); min-width: 0; }
+.msg-main h3 { margin: 0 0 8px; font-family: var(--font-display); font-weight: 820; font-stretch: 75%; font-size: clamp(34px, 5vw, 54px); line-height: .95; text-transform: uppercase; text-wrap: balance; }
+.msg-main p { margin: 0 0 20px; color: var(--fg-2); max-width: 52ch; }
+.email { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; max-width: 100%; }
+.email code { display: flex; align-items: center; padding: 11px 14px; border: 1px solid var(--line-2); border-right: 0; background: var(--bg); font: 600 14px var(--font-mono); color: var(--fg); user-select: all; min-width: 0; overflow-wrap: anywhere; }
+.msg-links { display: grid; align-content: start; }
+.msg-links a, .msg-links div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 22px; border-bottom: 1px solid var(--line); text-decoration: none; }
+.msg-links a:hover { background: var(--accent-wash); }
+.msg-links .v { font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.msg-links a .v::after { content: " ↗"; color: var(--accent); }
+
+footer { border-top: 1px solid var(--line); }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-block: 18px 28px; font: 500 10.5px/1.7 var(--font-mono); color: var(--muted); letter-spacing: .03em; }
+.foot kbd { border: 1px solid var(--line-2); padding: 1px 5px; font: inherit; color: var(--fg-2); }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 90; max-width: calc(100% - 32px); padding: 10px 14px; background: var(--fg); color: var(--bg); font: 600 12px var(--font-mono); letter-spacing: .03em; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1060px) {
+  .lab-grid { grid-template-columns: 1fr; }
+  .lab-main { border-right: 0; border-bottom: 1px solid var(--line); }
+  .tiles { grid-template-columns: repeat(3, 1fr); }
+  .tile:nth-child(odd) { border-right: 0; }
+  .tile:not(:nth-child(3n)) { border-right: 1px solid var(--line); }
+  .lab-side { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .lab-side > .side-h, .lab-side > .tiles { grid-column: 1 / -1; }
+  .study { border-right: 1px solid var(--line); }
+}
+@media (max-width: 900px) {
+  .des-grid, .msg { grid-template-columns: 1fr; }
+  .des-main, .msg-main { border-right: 0; border-bottom: 1px solid var(--line); }
+  .row2, .rs-grid { grid-template-columns: 1fr; }
+  .rs + .rs { border-left: 0; border-top: 1px solid var(--line); }
+  .clock { display: none; }
+}
+@media (max-width: 640px) {
+  body { font-size: 14.5px; }
+  .logo-sub, .fk-name { display: none; }
+  .bar { gap: 8px; }
+  .pos { grid-template-columns: 1fr; padding: 20px 16px; }
+  .pos-side { grid-template-columns: auto 1fr; gap: 4px 12px; align-items: baseline; }
+  .pos-dur { grid-column: 2; }
+  .des-main { padding: 24px 16px; }
+  .pb, .rs, .msg-main { padding-inline: 16px; }
+  .lab-main { padding-inline: 16px; }
+  .q { padding: 14px 16px; }
+  .q dd { font-size: 26px; }
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .tile:not(:nth-child(3n)) { border-right: 0; }
+  .tile:nth-child(odd) { border-right: 1px solid var(--line); }
+  .lab-side { grid-template-columns: 1fr; }
+  .study { border-right: 0; }
+  .lede { font-size: 16px; }
+  .off-row { grid-template-columns: 1fr; gap: 4px; padding-inline: 16px; }
+  .flow { grid-template-columns: 1fr; }
+  .arrow { padding-block: 2px; }
+  .spec { white-space: normal; }
+  .arrow::after { content: "↓"; }
+  .theme-btn span { padding-inline: 6px; }
+  .panel { scroll-margin-top: 104px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .tape { overflow-x: auto; }
+  .tape-track, .cursor { animation: none; }
+  .tape-track [aria-hidden="true"] { display: none; }
+}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <div class="bar">
+      <a class="logo" href="#des" aria-label="Adil Ulu, back to top">
+        <span class="logo-tkr">ULU</span>
+        <span class="logo-sub">Adil Ulu<br>UT Austin '28</span>
+      </a>
+      <form class="cmd" id="cmd-form" role="search" autocomplete="off">
+        <label class="cmd-prompt" for="cmd">&gt;</label>
+        <input id="cmd" name="cmd" type="text" spellcheck="false" autocapitalize="characters" placeholder="Command, e.g. LAB" aria-label="Command" aria-controls="cmd-menu" aria-autocomplete="list" aria-expanded="false" role="combobox">
+        <button class="go" type="submit" aria-label="Run command">GO</button>
+        <ul class="cmd-menu" id="cmd-menu" role="listbox" hidden></ul>
+      </form>
+      <div class="clock" title="NYSE regular hours, 9:30 to 16:00 ET">
+        <span class="dot" id="mkt-dot"></span><span id="mkt">NYSE</span><span id="et">--:-- ET</span>
+      </div>
+      <button class="theme-btn" id="theme" type="button" aria-label="Switch between terminal and paper themes">
+        <span data-t="dark">TERM</span><span data-t="light">PAPER</span>
+      </button>
+    </div>
+    <nav class="fkeys" aria-label="Sections">
+      <a href="#des" data-k="1"><span class="fk">1</span><span class="fk-mn">DES</span><span class="fk-name">Overview</span></a>
+      <a href="#pos" data-k="2"><span class="fk">2</span><span class="fk-mn">POS</span><span class="fk-name">Experience</span></a>
+      <a href="#lab" data-k="3"><span class="fk">3</span><span class="fk-mn">LAB</span><span class="fk-name">Strategy lab</span></a>
+      <a href="#rsch" data-k="4"><span class="fk">4</span><span class="fk-mn">RSCH</span><span class="fk-name">Research</span></a>
+      <a href="#tape" data-k="5"><span class="fk">5</span><span class="fk-mn">TAPE</span><span class="fk-name">Timeline</span></a>
+      <a href="#skls" data-k="6"><span class="fk">6</span><span class="fk-mn">SKLS</span><span class="fk-name">Skills</span></a>
+      <a href="#off" data-k="7"><span class="fk">7</span><span class="fk-mn">OFF</span><span class="fk-name">Off desk</span></a>
+      <a href="#msg" data-k="8"><span class="fk">8</span><span class="fk-mn">MSG</span><span class="fk-name">Contact</span></a>
+    </nav>
+  </div>
+</header>
+
+<div class="tape" aria-label="Key figures">
+  <div class="tape-track" id="tape-track">
+    <div class="tape-set">
+      <span class="ti"><b>GPA</b><span class="v">3.76</span><span>/ 4.00</span></span>
+      <span class="ti"><b>KOIOS</b><span>Sharpe</span><span class="v">1.21</span></span>
+      <span class="ti"><b>CRACK</b><span>hedge β</span><span class="v">1.21</span></span>
+      <span class="ti"><b>PNL</b><span class="v">$221/bbl</span><span>gross · 13Y</span></span>
+      <span class="ti"><b>CL RB HO</b><span>CME front-month, roll-adjusted</span></span>
+      <span class="ti"><b>PEDALISA</b><span>rev/mo</span><span class="v">$20K → $33K</span><span class="up">▲ 65%</span></span>
+      <span class="ti"><b>OLS</b><span>n =</span><span class="v">51</span><span>states + D.C.</span></span>
+      <span class="ti"><b>TSLA</b><span>3-statement model</span><span class="v">FY21–24</span></span>
+      <span class="ti"><b>UT AUSTIN</b><span>BA Econ · Finance minor</span><span class="v">'28</span></span>
+      <span class="ti"><b>LANG</b><span class="v">EN · TR · EL</span></span>
+      <span class="ti"><b>CLASH ROYALE</b><span>rank</span><span class="v">#4754</span></span>
+    </div>
+  </div>
+</div>
+
+<main id="main" class="wrap">
+
+  <!-- DES -->
+  <section class="panel" id="des" aria-labelledby="des-h">
+    <div class="ph"><span class="mn">DES</span><h2>Description</h2><span class="ph-meta">ULU · Austin, TX</span></div>
+    <div class="des-grid">
+      <div class="des-main">
+        <p class="eyebrow">BA Economics · Finance minor · UT Austin · Class of 2028</p>
+        <h1 class="name" id="des-h">Adil Ulu<span class="cursor" aria-hidden="true"></span></h1>
+        <p class="lede">Economics student at UT Austin who tests ideas against data. In summer 2026 I built and backtested a <strong>crude-oil crack spread strategy</strong> as a quant intern at Koios. I also managed a premium lamp retailer, where I led sales, hiring, and e-commerce and grew <strong>average monthly revenue 65%</strong>.</p>
+        <div class="actions">
+          <span class="status"><span class="dot"></span>Open to Summer 2027 internships</span>
+          <a class="btn primary" href="#msg">Get in touch</a>
+          <a class="btn" href="#lab">Run the strategy lab</a>
+        </div>
+      </div>
+      <dl class="quote" aria-label="Key figures">
+        <div class="quote-h"><span class="label">Key figures</span><span class="label">As of Oct 2026</span></div>
+        <div class="q"><dt>GPA</dt><dd>3.76<small> / 4.00</small></dd><span class="note">UT Austin, cumulative</span></div>
+        <div class="q"><dt>Backtest Sharpe</dt><dd>1.21</dd><span class="note">Koios, walk-forward</span></div>
+        <div class="q"><dt>Hedge ratio</dt><dd>1.21</dd><span class="note">Crack spread, cointegration</span></div>
+        <div class="q"><dt>Gross PnL</dt><dd>$221<small> /bbl</small></dd><span class="note">Over 13 years of data</span></div>
+        <div class="q"><dt>Revenue growth</dt><dd class="up">+65%</dd><span class="note">$20K → $33K a month, Pedalisa</span></div>
+        <div class="q"><dt>Languages</dt><dd>3</dd><span class="note">English, Turkish, Greek</span></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- POS -->
+  <section class="panel" id="pos" aria-labelledby="pos-h">
+    <div class="ph"><span class="mn">POS</span><h2 id="pos-h">Experience</h2><span class="ph-meta">3 positions · newest first</span></div>
+
+    <article class="pos">
+      <div class="pos-side">
+        <span class="pos-tkr">KOIOS</span>
+        <span class="pos-dates">May 2026 – Aug 2026</span>
+        <span class="pos-dur">4 months</span>
+      </div>
+      <div>
+        <h3>Quantitative Analyst Intern</h3>
+        <p class="pos-where">Koios · Houston, TX</p>
+        <ul>
+          <li>Engineered a roll-adjusted front-month futures series for crude oil, gasoline, and heating oil from raw CME contract data.</li>
+          <li>Validated crack spread cointegration with Engle–Granger and Johansen tests, estimating a data-driven hedge ratio of 1.21.</li>
+          <li>Delivered a walk-forward mean-reversion backtest with a 1.21 Sharpe ratio and $221 per barrel gross PnL over 13 years.</li>
+        </ul>
+        <div class="chips">
+          <span class="chip"><b>CL · RB · HO</b> futures</span>
+          <span class="chip">Engle–Granger</span>
+          <span class="chip">Johansen</span>
+          <span class="chip">Hedge β <b>1.21</b></span>
+          <span class="chip">Sharpe <b>1.21</b></span>
+          <span class="chip"><b>$221</b>/bbl gross</span>
+        </div>
+        <a class="jump" href="#lab">Run the method on simulated data →</a>
+      </div>
+    </article>
+
+    <article class="pos">
+      <div class="pos-side">
+        <span class="pos-tkr">PEDALISA</span>
+        <span class="pos-dates">Jun 2025 – Aug 2026</span>
+        <span class="pos-dur">15 months</span>
+      </div>
+      <div>
+        <h3>Manager and Financial Analyst</h3>
+        <p class="pos-where">Pedalisa Art Studios · Sugar Land, TX</p>
+        <ul>
+          <li>Grew average monthly revenue 65%, from $20K to $33K, by leading sales, hiring, and e-commerce for a premium lamp retailer.</li>
+          <li>Tracked sales and revenue across in-store and e-commerce channels to monitor growth and product trends.</li>
+          <li>Recruited, interviewed, trained, and onboarded a new hire, strengthening staffing coverage and daily store operations.</li>
+        </ul>
+        <div class="rev" role="img" aria-label="Average monthly revenue grew from $20K to $33K, up 65 percent">
+          <div class="rev-row"><span>Before</span><span class="rev-track"><span class="rev-bar" style="--w:57%"></span><span class="rev-v">$20K</span></span></div>
+          <div class="rev-row"><span>After</span><span class="rev-track"><span class="rev-bar" style="--w:94%"></span><span class="rev-v">$33K</span></span></div>
+          <p class="rev-cap">Average monthly revenue, up 65%</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="pos">
+      <div class="pos-side">
+        <span class="pos-tkr">BRIGHT FORTUNE</span>
+        <span class="pos-dates">Nov 2023 – Aug 2025</span>
+        <span class="pos-dur">22 months</span>
+      </div>
+      <div>
+        <h3>Customer Service</h3>
+        <p class="pos-where">Bright Fortune · Sugar Land, TX</p>
+        <ul>
+          <li>Managed day-to-day customer service for an online store, resolving customer inquiries and issues to keep satisfaction high.</li>
+          <li>Optimized online product placement and digital merchandising, analyzing sales data to refine listings.</li>
+        </ul>
+      </div>
+    </article>
+  </section>
+
+  <!-- LAB -->
+  <section class="panel" id="lab" aria-labelledby="lab-h">
+    <div class="ph"><span class="mn">LAB</span><h2 id="lab-h">Strategy lab</h2><span class="ph-meta">Simulated prices · 13 years · daily</span></div>
+    <div class="lab-grid">
+      <div class="lab-main" id="lab-main">
+        <p class="lab-intro">At Koios I tested whether the crack spread between crude oil and refined products mean-reverts, then traded it walk-forward. This lab runs the same kind of rules on a simulated spread so you can move the thresholds and watch the trades change. The prices here are synthetic. The real study's results are in the side panel.</p>
+        <div class="controls">
+          <div class="ctl">
+            <label for="entry">Entry at |z| ≥ <output id="entry-o" for="entry">2.0</output></label>
+            <input type="range" id="entry" min="1" max="3" step="0.1" value="2">
+          </div>
+          <div class="ctl">
+            <label for="exit">Exit at |z| ≤ <output id="exit-o" for="exit">0.5</output></label>
+            <input type="range" id="exit" min="0" max="0.9" step="0.1" value="0.5">
+          </div>
+          <div class="ctl">
+            <label for="look">Lookback <output id="look-o" for="look">60 days</output></label>
+            <input type="range" id="look" min="20" max="120" step="5" value="60">
+          </div>
+          <div class="seed">
+            <button class="btn" id="reseed" type="button">New price path</button>
+            <span class="seed-v">Path <span id="seed-o">#1</span></span>
+          </div>
+        </div>
+
+        <div class="chart-h">
+          <h3>Spread z-score</h3><span class="sub">Hedged spread vs. its trailing mean</span>
+          <div class="legend">
+            <span><i class="k-line"></i>z-score</span>
+            <span><i class="k-rect k-long"></i>Long spread</span>
+            <span><i class="k-rect k-short"></i>Short spread</span>
+            <span><i class="k-band"></i>Entry level</span>
+            <span><i class="k-rect k-est"></i>Estimation year</span>
+          </div>
+        </div>
+        <div class="chart" id="chart-z" tabindex="0" role="img" aria-label="Spread z-score over 13 simulated years with long and short periods shaded. Use left and right arrow keys to inspect days."></div>
+
+        <div class="chart-h">
+          <h3>Cumulative PnL</h3><span class="sub">Gross, dollars per barrel of spread</span>
+        </div>
+        <div class="chart" id="chart-p" tabindex="0" role="img" aria-label="Cumulative gross profit and loss in dollars per barrel. Use left and right arrow keys to inspect days."></div>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+
+      <aside class="lab-side" aria-label="Results">
+        <div class="side-h"><span class="label">This simulation</span><span class="label" id="sim-tag">Path #1</span></div>
+        <div class="tiles" aria-live="polite">
+          <div class="tile"><span class="label">Sharpe</span><span class="v" id="st-sharpe">–</span></div>
+          <div class="tile"><span class="label">Gross PnL /bbl</span><span class="v" id="st-pnl">–</span></div>
+          <div class="tile"><span class="label">Trades</span><span class="v" id="st-trades">–</span></div>
+          <div class="tile"><span class="label">Win rate</span><span class="v" id="st-win">–</span></div>
+          <div class="tile"><span class="label">Max drawdown</span><span class="v" id="st-dd">–</span></div>
+          <div class="tile"><span class="label">Avg hedge ratio</span><span class="v" id="st-beta">–</span></div>
+        </div>
+        <div class="study">
+          <div class="side-h"><span class="label" style="color:var(--accent)">Koios study · real data</span></div>
+          <dl>
+            <div><dt>Sharpe ratio</dt><dd>1.21</dd></div>
+            <div><dt>Hedge ratio</dt><dd>1.21</dd></div>
+            <div><dt>Gross PnL</dt><dd>$221 / bbl</dd></div>
+            <div><dt>History</dt><dd>13 years</dd></div>
+            <div><dt>Cointegration tests</dt><dd>Engle–Granger, Johansen</dd></div>
+            <div><dt>Contracts</dt><dd>CME CL, RB, HO</dd></div>
+          </dl>
+        </div>
+        <div class="method">
+          <span class="label">How the simulation works</span>
+          <p>Crude follows a noisy random walk. The product basket equals 1.21 × crude plus a spread that pulls back toward its mean and sometimes shifts level. Each month the hedge ratio is re-estimated by OLS on the trailing year, so every trade only uses past data. Year 1 is the estimation window.</p>
+        </div>
+      </aside>
+    </div>
+    <div class="blotter">
+      <div class="side-h"><span class="label">Trade blotter</span><span class="label" id="blotter-count">–</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th class="tl">Side</th><th>Entry</th><th>Exit</th><th>Days</th><th>Entry z</th><th>Hedge ratio</th><th>PnL $/bbl</th></tr></thead>
+          <tbody id="blotter"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- RSCH -->
+  <section class="panel" id="rsch" aria-labelledby="rsch-h">
+    <div class="ph"><span class="mn">RSCH</span><h2 id="rsch-h">Research</h2><span class="ph-meta">Academic projects</span></div>
+    <div class="rs-grid">
+      <article class="rs">
+        <div class="rs-top"><span class="label">Econometrics · Stata</span><span class="label">Feb 2026 – Apr 2026</span></div>
+        <h3>State cigarette excise taxes and smoking prevalence</h3>
+        <p class="spec"><span class="c">// model, simplified</span><br>Prevalence<sub>s</sub> = β<sub>0</sub> + β<sub>1</sub>·Tax<sub>s</sub> + β<sub>2</sub>·Income<sub>s</sub> + β<sub>3</sub>·Poverty<sub>s</sub> + ε<sub>s</sub><br><span class="c">// s = 50 states + D.C. · n = 51 · cross-section · OLS</span></p>
+        <p class="finding"><span class="label">Finding</span>Income and poverty rates predicted smoking prevalence better than tax rates alone.</p>
+        <ul>
+          <li>Built a multivariate OLS regression in Stata on cross-sectional data for all 50 states and D.C.</li>
+          <li>Merged CDC, U.S. Census Bureau, and KFF datasets to weigh fiscal policy against socioeconomic factors.</li>
+          <li>Used hypothesis testing to compare how well each variable explained prevalence.</li>
+        </ul>
+        <div class="feeds"><span class="chip">CDC</span><span class="chip">U.S. Census Bureau</span><span class="chip">KFF</span></div>
+      </article>
+      <article class="rs">
+        <div class="rs-top"><span class="label">Financial modeling · Excel</span><span class="label">May 2025 – Jun 2025</span></div>
+        <h3>Tesla three-statement financial model</h3>
+        <div class="flow" role="img" aria-label="Income statement feeds net income to the cash flow statement, which feeds ending cash to the balance sheet">
+          <div class="stmt"><b>IS</b><span>Income statement</span></div>
+          <div class="arrow">net<br>income</div>
+          <div class="stmt"><b>CFS</b><span>Cash flow statement</span></div>
+          <div class="arrow">ending<br>cash</div>
+          <div class="stmt"><b>BS</b><span>Balance sheet</span></div>
+        </div>
+        <div>
+          <span class="label">Schedules driving the forecast</span>
+          <div class="feeds" style="margin-top:8px">
+            <span class="chip">Depreciation &amp; amortization</span><span class="chip">Net working capital</span><span class="chip">Equity</span><span class="chip">Capex</span><span class="chip">Intangibles</span><span class="chip">Interest income / expense</span>
+          </div>
+        </div>
+        <ul>
+          <li>Built a linked three-statement model in Excel, forecasting earnings and cash flow from 2021–2024 historical actuals.</li>
+          <li>Constructed D&amp;A, net working capital, and equity schedules to drive the balance sheet forecast.</li>
+          <li>Modeled capital expenditures, intangible assets, and interest to strengthen cash flow projections.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- TAPE -->
+  <section class="panel" id="tape" aria-labelledby="tape-h">
+    <div class="ph"><span class="mn">TAPE</span><h2 id="tape-h">Timeline</h2><span class="ph-meta">Nov 2023 – May 2028</span></div>
+    <div class="pb">
+      <div class="chart-h" style="margin-top:0">
+        <h3>Work, research, and school</h3><span class="sub">Hover or tab through a bar for details</span>
+        <div class="legend">
+          <span><i class="k-rect k-work"></i>Work</span>
+          <span><i class="k-rect k-research"></i>Research</span>
+          <span><i class="k-rect k-edu"></i>Education</span>
+        </div>
+      </div>
+      <div class="tl-scroll"><div class="chart tl-chart" id="chart-t"></div></div>
+    </div>
+  </section>
+
+  <div class="row2">
+    <!-- SKLS -->
+    <section class="panel" id="skls" aria-labelledby="skls-h">
+      <div class="ph"><span class="mn">SKLS</span><h2 id="skls-h">Skills</h2><span class="ph-meta">Watchlist</span></div>
+      <div class="tbl-wrap" style="max-height:none">
+        <table class="wl">
+          <thead><tr><th>Code</th><th>Skill</th><th>Where it shows up</th></tr></thead>
+          <tbody>
+            <tr class="wl-group"><td colspan="3">Tools</td></tr>
+            <tr><td class="code">PY</td><td>Python</td><td class="where">Programming and data work</td></tr>
+            <tr><td class="code">STATA</td><td>Stata</td><td class="where">Cigarette tax regression</td></tr>
+            <tr><td class="code">R</td><td>R (RStudio)</td><td class="where">Statistics</td></tr>
+            <tr><td class="code">XLS</td><td>Excel</td><td class="where">Financial modeling and forecasting; Tesla model</td></tr>
+            <tr><td class="code">OFC</td><td>PowerPoint, Word</td><td class="where">Presentations and reports</td></tr>
+            <tr class="wl-group"><td colspan="3">Quantitative methods</td></tr>
+            <tr><td class="code">COINT</td><td>Cointegration</td><td class="where">Koios: Engle–Granger, Johansen</td></tr>
+            <tr><td class="code">TSA</td><td>Time-series analysis</td><td class="where">Koios: roll-adjusted futures series</td></tr>
+            <tr><td class="code">BKTST</td><td>Backtesting</td><td class="where">Koios: walk-forward mean reversion</td></tr>
+            <tr><td class="code">OLS</td><td>OLS regression</td><td class="where">Cigarette tax study</td></tr>
+            <tr><td class="code">HYP</td><td>Hypothesis testing</td><td class="where">Cigarette tax study</td></tr>
+            <tr class="wl-group"><td colspan="3">Certifications</td></tr>
+            <tr><td class="code">F360</td><td>Autodesk Fusion 360</td><td class="where">Certified</td></tr>
+            <tr><td class="code">INV</td><td>Autodesk Inventor</td><td class="where">Certified</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- OFF -->
+    <section class="panel" id="off" aria-labelledby="off-h">
+      <div class="ph"><span class="mn">OFF</span><h2 id="off-h">Off desk</h2><span class="ph-meta">Interests · languages</span></div>
+      <div class="off">
+        <div class="off-row"><span class="label">Music</span><p class="off-v"><span>Piano</span><span>Guitar</span><span>Violin</span></p></div>
+        <div class="off-row"><span class="label">Training</span><p class="off-v"><span>Calisthenics</span><span>Bodybuilding</span></p></div>
+        <div class="off-row"><span class="label">Sport</span><p class="off-v"><span>Table tennis</span><span>Premier League</span></p></div>
+        <div class="off-row"><span class="label">Games</span><p class="off-v"><span>Clash Royale, top <span class="rank">#4754</span></span></p></div>
+        <div class="off-row"><span class="label">Languages</span><p class="off-v"><span>English (native)</span><span>Turkish (native)</span><span>Greek</span></p></div>
+        <div class="off-row"><span class="label">Mentoring</span><p>I mentored students on math and career choices.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MSG -->
+  <section class="panel" id="msg" aria-labelledby="msg-h">
+    <div class="ph"><span class="mn">MSG</span><h2>Contact</h2><span class="ph-meta">Email · LinkedIn</span></div>
+    <div class="msg">
+      <div class="msg-main">
+        <h3 id="msg-h">Let's talk</h3>
+        <p>I'm looking for Summer 2027 internships. Email is the fastest way to reach me.</p>
+        <div class="email">
+          <code id="email">adilulu@utexas.edu</code>
+          <button class="btn primary" id="copy" type="button">Copy email</button>
+        </div>
+      </div>
+      <div class="msg-links">
+        <a href="https://www.linkedin.com/in/adilulu" target="_blank" rel="noopener"><span class="label">LinkedIn</span><span class="v">linkedin.com/in/adilulu</span></a>
+        <a href="mailto:adilulu@utexas.edu"><span class="label">Email</span><span class="v">adilulu@utexas.edu</span></a>
+        <div><span class="label">Based in</span><span class="v">Austin, TX</span></div>
+        <div><span class="label">School</span><span class="v">UT Austin · Class of 2028</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Adil Ulu · No frameworks, no trackers.</span>
+    <span>Press <kbd>/</kbd> for the command bar · <kbd>1</kbd>–<kbd>8</kbd> to jump · Lab data is simulated. Past performance does not guarantee future results.</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  const fmt = (v, d = 1) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(d);
+  const money = (v, d = 1) => (v < 0 ? "−$" : "$") + Math.abs(v).toFixed(d);
+
+  /* ---------------- toast ---------------- */
+  const toastEl = $("#toast");
+  let toastT;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.hidden = false;
+    clearTimeout(toastT);
+    toastT = setTimeout(() => { toastEl.hidden = true; }, 3200);
+  }
+
+  /* ---------------- theme ---------------- */
+  const root = document.documentElement;
+  const saved = store.get("ulu-theme");
+  if (saved === "light" || saved === "dark") root.setAttribute("data-theme", saved);
+  function theme() {
+    const t = root.getAttribute("data-theme");
+    if (t === "light" || t === "dark") return t;
+    return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  }
+  function paintThemeBtn() {
+    const t = theme();
+    $$("#theme span").forEach(s => s.classList.toggle("on", s.dataset.t === t));
+  }
+  function setTheme(t) {
+    root.setAttribute("data-theme", t);
+    store.set("ulu-theme", t);
+    paintThemeBtn();
+  }
+  $("#theme").addEventListener("click", () => setTheme(theme() === "dark" ? "light" : "dark"));
+  matchMedia("(prefers-color-scheme: light)").addEventListener("change", paintThemeBtn);
+  new MutationObserver(paintThemeBtn).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  paintThemeBtn();
+
+  /* ---------------- market clock ---------------- */
+  const HOLIDAYS = new Set([
+    "2026-01-01","2026-01-19","2026-02-16","2026-04-03","2026-05-25","2026-06-19","2026-07-03","2026-09-07","2026-11-26","2026-12-25",
+    "2027-01-01","2027-01-18","2027-02-15","2027-03-26","2027-05-31","2027-06-18","2027-07-05","2027-09-06","2027-11-25","2027-12-24"
+  ]);
+  const etFmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  function tick() {
+    const p = Object.fromEntries(etFmt.formatToParts(new Date()).map(x => [x.type, x.value]));
+    const mins = (+p.hour) * 60 + (+p.minute);
+    const day = `${p.year}-${p.month}-${p.day}`;
+    const open = !["Sat", "Sun"].includes(p.weekday) && !HOLIDAYS.has(day) && mins >= 570 && mins < 960;
+    $("#mkt-dot").className = "dot " + (open ? "open" : "closed");
+    $("#mkt").textContent = open ? "NYSE OPEN" : "NYSE CLOSED";
+    $("#et").textContent = `${p.hour}:${p.minute} ET`;
+  }
+  tick();
+  setInterval(tick, 15000);
+
+  /* ---------------- ticker tape (duplicate for a seamless loop) ---------------- */
+  const track = $("#tape-track");
+  const set = track.firstElementChild;
+  const clone = set.cloneNode(true);
+  clone.setAttribute("aria-hidden", "true");
+  track.appendChild(clone);
+  set.style.display = clone.style.display = "inline-flex";
+
+  /* ---------------- navigation + command bar ---------------- */
+  const SECTIONS = { DES: "des", POS: "pos", LAB: "lab", RSCH: "rsch", TAPE: "tape", SKLS: "skls", OFF: "off", MSG: "msg" };
+  const COMMANDS = [
+    { c: "DES", d: "Overview", run: () => go("des") },
+    { c: "POS", d: "Experience", run: () => go("pos") },
+    { c: "LAB", d: "Strategy lab", run: () => go("lab") },
+    { c: "RSCH", d: "Research projects", run: () => go("rsch") },
+    { c: "TAPE", d: "Timeline", run: () => go("tape") },
+    { c: "SKLS", d: "Skills watchlist", run: () => go("skls") },
+    { c: "OFF", d: "Off desk: interests", run: () => go("off") },
+    { c: "MSG", d: "Contact", run: () => go("msg") },
+    { c: "COPY", d: "Copy my email address", run: () => copyEmail() },
+    { c: "NEW", d: "New simulated price path", run: () => { go("lab"); reseed(); } },
+    { c: "THEME", d: "Switch terminal / paper", run: () => setTheme(theme() === "dark" ? "light" : "dark") },
+    { c: "HELP", d: "List all commands", run: () => {} }
+  ];
+  const ALIASES = {
+    ABOUT: "DES", HOME: "DES", TOP: "DES", EXP: "POS", EXPERIENCE: "POS", WORK: "POS", JOBS: "POS",
+    STRATEGY: "LAB", BACKTEST: "LAB", PROJECTS: "RSCH", RESEARCH: "RSCH", TIMELINE: "TAPE",
+    SKILLS: "SKLS", INTERESTS: "OFF", HOBBIES: "OFF", CONTACT: "MSG", EMAIL: "MSG", HIRE: "MSG",
+    LIGHT: "THEME", DARK: "THEME", PAPER: "THEME", TERMINAL: "THEME", "?": "HELP", RESEED: "NEW"
+  };
+
+  function go(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ block: "start" });
+    try { history.replaceState(null, "", "#" + id); } catch (e) {}
+    el.classList.add("flash");
+    setTimeout(() => el.classList.remove("flash"), 700);
+    const h = el.querySelector("h1, h2, h3");
+    if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+  }
+
+  const input = $("#cmd"), menu = $("#cmd-menu");
+  let matches = [], sel = 0;
+  function renderMenu() {
+    menu.textContent = "";
+    matches.forEach((m, i) => {
+      const li = document.createElement("li");
+      li.className = "cmd-opt";
+      li.id = "opt-" + i;
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", String(i === sel));
+      const b = document.createElement("b"); b.textContent = m.c;
+      const s = document.createElement("span"); s.textContent = m.d;
+      const k = document.createElement("kbd"); k.textContent = "GO";
+      li.append(b, s, k);
+      li.addEventListener("mousedown", e => { e.preventDefault(); exec(m); });
+      menu.appendChild(li);
+    });
+    if (matches.length) input.setAttribute("aria-activedescendant", "opt-" + sel);
+    else input.removeAttribute("aria-activedescendant");
+  }
+  function openMenu(q) {
+    q = (q || "").trim().toUpperCase();
+    const target = ALIASES[q] || null;
+    matches = COMMANDS.filter(m => !q || m.c.startsWith(q) || m.d.toUpperCase().includes(q) || m.c === target);
+    sel = 0;
+    menu.hidden = matches.length === 0;
+    input.setAttribute("aria-expanded", String(!menu.hidden));
+    renderMenu();
+  }
+  function closeMenu() { menu.hidden = true; input.setAttribute("aria-expanded", "false"); }
+  function exec(m) {
+    if (m.c === "HELP") { input.value = ""; input.focus(); openMenu(""); return; }
+    input.value = "";
+    closeMenu();
+    input.blur();
+    m.run();
+  }
+  function runText(raw) {
+    const q = raw.trim().toUpperCase().replace(/\s*<?GO>?$/, "").trim();
+    if (!q) return;
+    if (q === "CR" || q === "ELIXIR" || q === "CLASH") { input.value = ""; closeMenu(); input.blur(); easter(); return; }
+    const key = ALIASES[q] || q;
+    const m = COMMANDS.find(x => x.c === key);
+    if (m) { exec(m); return; }
+    toast(`Unknown command "${q}". Type HELP to see the list.`);
+  }
+  input.addEventListener("focus", () => openMenu(input.value));
+  input.addEventListener("input", () => openMenu(input.value));
+  input.addEventListener("blur", () => setTimeout(closeMenu, 120));
+  input.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" && matches.length) { e.preventDefault(); sel = (sel + 1) % matches.length; renderMenu(); }
+    else if (e.key === "ArrowUp" && matches.length) { e.preventDefault(); sel = (sel - 1 + matches.length) % matches.length; renderMenu(); }
+    else if (e.key === "Escape") { input.value = ""; closeMenu(); input.blur(); }
+    else if (e.key === "Tab" && !menu.hidden && matches[sel]) { e.preventDefault(); input.value = matches[sel].c; openMenu(input.value); }
+  });
+  $("#cmd-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const q = input.value.trim().toUpperCase();
+    const exact = COMMANDS.find(x => x.c === (ALIASES[q] || q));
+    if (exact || q === "CR" || q === "ELIXIR" || q === "CLASH") runText(q);
+    else if (q && !menu.hidden && matches[sel]) exec(matches[sel]);
+    else if (q) runText(q);
+    else if (!menu.hidden && matches[sel]) exec(matches[sel]);
+  });
+
+  let typed = "";
+  document.addEventListener("keydown", e => {
+    const t = e.target;
+    const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+    if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "/") { e.preventDefault(); input.focus(); return; }
+    if (/^[1-8]$/.test(e.key)) {
+      const a = $(`.fkeys a[data-k="${e.key}"]`);
+      if (a) { e.preventDefault(); go(a.getAttribute("href").slice(1)); }
+      return;
+    }
+    if (e.key.length === 1) {
+      typed = (typed + e.key.toLowerCase()).slice(-6);
+      if (typed === "elixir") { typed = ""; easter(); }
+    }
+  });
+  $$(".fkeys a, .jump, .actions a, .logo").forEach(a => a.addEventListener("click", e => {
+    const href = a.getAttribute("href");
+    if (href && href.startsWith("#") && document.getElementById(href.slice(1))) { e.preventDefault(); go(href.slice(1)); }
+  }));
+
+  function easter() {
+    toast("CR <GO>  Clash Royale, top #4754. Ask me for a match.");
+    const r = $(".rank");
+    if (r) { r.closest(".panel").classList.add("flash"); setTimeout(() => r.closest(".panel").classList.remove("flash"), 900); }
+  }
+
+  /* scroll spy */
+  const navLinks = new Map($$(".fkeys a").map(a => [a.getAttribute("href").slice(1), a]));
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        navLinks.forEach(a => a.removeAttribute("aria-current"));
+        const a = navLinks.get(en.target.id);
+        if (a) {
+          a.setAttribute("aria-current", "true");
+          const strip = a.parentElement;
+          const l = a.offsetLeft - strip.offsetLeft;
+          if (l < strip.scrollLeft || l + a.offsetWidth > strip.scrollLeft + strip.clientWidth) strip.scrollTo({ left: l - 16 });
+        }
+      }
+    });
+  }, { rootMargin: "-40% 0px -55% 0px" });
+  Object.values(SECTIONS).forEach(id => { const el = document.getElementById(id); if (el) spy.observe(el); });
+
+  /* copy email */
+  function copyEmail() {
+    const text = "adilulu@utexas.edu";
+    const fallback = () => {
+      const r = document.createRange();
+      r.selectNodeContents($("#email"));
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      toast("Address selected. Press Ctrl+C or ⌘C to copy.");
+    };
+    try {
+      navigator.clipboard.writeText(text).then(() => toast("Copied adilulu@utexas.edu"), fallback);
+    } catch (e) { fallback(); }
+  }
+  $("#copy").addEventListener("click", copyEmail);
+
+  /* ---------------- SVG helpers ---------------- */
+  function el(name, attrs, parent) {
+    const n = document.createElementNS(SVGNS, name);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function txt(parent, x, y, s, attrs = {}) {
+    const t = el("text", Object.assign({ x, y }, attrs), parent);
+    t.textContent = s;
+    return t;
+  }
+  function niceTicks(min, max, count) {
+    const span = max - min || 1;
+    const step0 = span / count;
+    const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+    const err = step0 / mag;
+    const step = (err >= 7 ? 10 : err >= 3 ? 5 : err >= 1.5 ? 2 : 1) * mag;
+    const out = [];
+    for (let v = Math.ceil(min / step) * step; v <= max + 1e-9; v += step) out.push(+v.toFixed(10));
+    return { ticks: out, step };
+  }
+
+  /* ---------------- simulation ---------------- */
+  const YEAR = 252, YEARS = 13, N = YEAR * YEARS, WARM = YEAR;
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(r) {
+    let u = 0, v = 0;
+    while (u === 0) u = r();
+    while (v === 0) v = r();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function simulate(seed) {
+    const r = mulberry32(seed * 7919 + 17);
+    const pc = new Float64Array(N), pp = new Float64Array(N);
+    const anchor = Math.log(75);
+    let x = anchor, mu = 12, s = 12;
+    for (let t = 0; t < N; t++) {
+      if (t > 0) {
+        x += 0.003 * (anchor - x) + 0.019 * gauss(r);
+        if (r() < 1 / 650) mu += 3.2 * gauss(r);
+        s += 0.035 * (mu - s) + 1.0 * gauss(r);
+      }
+      pc[t] = Math.exp(x);
+      pp[t] = 1.21 * pc[t] + s;
+    }
+    // walk-forward hedge ratio: re-fit monthly on the trailing year
+    const beta = new Float64Array(N).fill(NaN);
+    let b = NaN;
+    for (let t = WARM; t < N; t++) {
+      if ((t - WARM) % 21 === 0) {
+        let sx = 0, sy = 0, sxx = 0, sxy = 0;
+        for (let k = t - WARM; k < t; k++) { sx += pc[k]; sy += pp[k]; sxx += pc[k] * pc[k]; sxy += pc[k] * pp[k]; }
+        b = (WARM * sxy - sx * sy) / (WARM * sxx - sx * sx);
+      }
+      beta[t] = b;
+    }
+    return { pc, pp, beta };
+  }
+  function backtest(P, entry, exit, look) {
+    const { pc, pp, beta } = P;
+    const z = new Float64Array(N).fill(NaN), pos = new Int8Array(N), cum = new Float64Array(N).fill(NaN);
+    const trades = [], daily = [];
+    let p = 0, hb = 0, open = null, c = 0, bsum = 0, bn = 0;
+    for (let t = WARM; t < N; t++) {
+      if (t > WARM) {
+        const d = p * ((pp[t] - pp[t - 1]) - hb * (pc[t] - pc[t - 1]));
+        c += d; daily.push(d);
+        if (open) open.pnl += d;
+      }
+      cum[t] = c;
+      const b = beta[t];
+      let m = 0, m2 = 0;
+      for (let k = t - look + 1; k <= t; k++) { const e = pp[k] - b * pc[k]; m += e; m2 += e * e; }
+      m /= look;
+      const sd = Math.sqrt(Math.max(m2 / look - m * m, 1e-9));
+      const zt = ((pp[t] - b * pc[t]) - m) / sd;
+      z[t] = zt;
+      if (p === 0) {
+        if (t < N - 1) {
+          if (zt >= entry) p = -1; else if (zt <= -entry) p = 1;
+          if (p !== 0) { hb = b; bsum += b; bn++; open = { side: p, t0: t, z0: zt, b: b, pnl: 0 }; }
+        }
+      } else if ((p === 1 && zt >= -exit) || (p === -1 && zt <= exit) || t === N - 1) {
+        open.t1 = t; open.open = t === N - 1 && !((p === 1 && zt >= -exit) || (p === -1 && zt <= exit));
+        trades.push(open); open = null; p = 0;
+      }
+      pos[t] = p;
+    }
+    const n = daily.length;
+    const mean = daily.reduce((a, v) => a + v, 0) / n;
+    const sd = Math.sqrt(daily.reduce((a, v) => a + (v - mean) * (v - mean), 0) / (n - 1)) || 1;
+    let peak = 0, dd = 0;
+    for (let t = WARM; t < N; t++) { peak = Math.max(peak, cum[t]); dd = Math.max(dd, peak - cum[t]); }
+    const wins = trades.filter(tr => tr.pnl > 0).length;
+    return {
+      z, pos, cum, trades,
+      sharpe: mean / sd * Math.sqrt(YEAR),
+      total: c, dd, wins,
+      avgBeta: bn ? bsum / bn : NaN
+    };
+  }
+
+  const state = { seed: 1, entry: 2, exit: 0.5, look: 60, P: null, R: null, hover: null };
+  const dayLabel = t => `Y${Math.floor(t / YEAR) + 1} · D${(t % YEAR) + 1}`;
+
+  /* ---------------- chart: z-score ---------------- */
+  const cz = $("#chart-z"), cp = $("#chart-p"), tip = $("#tip"), labMain = $("#lab-main");
+  const M = { l: 40, r: 64, t: 10, b: 26 };
+  const charts = {};
+
+  function frame(container, H) {
+    container.textContent = "";
+    const W = Math.max(280, container.clientWidth);
+    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, "aria-hidden": "true" }, container);
+    const iw = W - M.l - M.r, ih = H - M.t - M.b;
+    const x = t => M.l + (t / (N - 1)) * iw;
+    return { svg, W, H, iw, ih, x };
+  }
+  function xAxis(svg, x, H, W) {
+    const every = W < 520 ? 2 : 1;
+    for (let yr = 0; yr < YEARS; yr++) {
+      if (yr % every) continue;
+      txt(svg, x(yr * YEAR + YEAR / 2), H - 8, `Y${yr + 1}`, { "text-anchor": "middle" });
+    }
+  }
+
+  function drawZ() {
+    const H = 214;
+    const { svg, W, iw, ih, x } = frame(cz, H);
+    const LIM = 4;
+    const y = v => M.t + (1 - (Math.max(-LIM, Math.min(LIM, v)) + LIM) / (2 * LIM)) * ih;
+    const R = state.R;
+    // estimation window
+    el("rect", { x: x(0), y: M.t, width: x(WARM) - x(0), height: ih, class: "w-est" }, svg);
+    // position washes
+    R.trades.forEach(tr => {
+      el("rect", { x: x(tr.t0), y: M.t, width: Math.max(1, x(tr.t1) - x(tr.t0)), height: ih, class: tr.side === 1 ? "w-long" : "w-short" }, svg);
+    });
+    // grid
+    [-3, 0, 3].forEach(v => {
+      el("line", { x1: M.l, x2: M.l + iw, y1: y(v), y2: y(v), class: v === 0 ? "ax" : "gl" }, svg);
+      txt(svg, M.l - 8, y(v) + 3.5, v === 0 ? "0" : (v > 0 ? "+" : "−") + Math.abs(v), { "text-anchor": "end" });
+    });
+    // entry bands
+    [state.entry, -state.entry].forEach(v => {
+      el("line", { x1: M.l, x2: M.l + iw, y1: y(v), y2: y(v), class: "band" }, svg);
+    });
+    txt(svg, M.l + iw + 8, y(state.entry) + 3.5, `+${state.entry.toFixed(1)}σ`);
+    txt(svg, M.l + iw + 8, y(-state.entry) + 3.5, `−${state.entry.toFixed(1)}σ`);
+    // z path: sample every few days so the line stays readable; hover reads exact daily values
+    let d = "";
+    const step = Math.max(1, Math.ceil((N - WARM) / iw));
+    for (let t = WARM; t < N; t += step) d += (d ? "L" : "M") + x(t).toFixed(1) + "," + y(R.z[t]).toFixed(1);
+    el("path", { d, class: "ln ln-1", style: "stroke-width:1.25" }, svg);
+    if (x(WARM) - x(0) > 76) txt(svg, x(WARM / 2), M.t + 14, "Estimation", { "text-anchor": "middle" });
+    xAxis(svg, x, H, W);
+    const xh = el("line", { y1: M.t, y2: M.t + ih, class: "xh", visibility: "hidden" }, svg);
+    const mk = el("circle", { r: 4, class: "mk", visibility: "hidden" }, svg);
+    charts.z = { x, y, xh, mk, W, iw, val: t => R.z[t] };
+  }
+
+  /* ---------------- chart: cumulative PnL ---------------- */
+  function drawP() {
+    const H = 176;
+    const { svg, W, iw, ih, x } = frame(cp, H);
+    const R = state.R;
+    let lo = 0, hi = 0;
+    for (let t = WARM; t < N; t++) { lo = Math.min(lo, R.cum[t]); hi = Math.max(hi, R.cum[t]); }
+    const { ticks } = niceTicks(lo, hi, 3);
+    const yMin = Math.min(lo, ticks[0]), yMax = Math.max(hi, ticks[ticks.length - 1]);
+    const y = v => M.t + (1 - (v - yMin) / (yMax - yMin || 1)) * ih;
+    el("rect", { x: x(0), y: M.t, width: x(WARM) - x(0), height: ih, class: "w-est" }, svg);
+    ticks.forEach(v => {
+      el("line", { x1: M.l, x2: M.l + iw, y1: y(v), y2: y(v), class: v === 0 ? "ax" : "gl" }, svg);
+      txt(svg, M.l - 8, y(v) + 3.5, (v < 0 ? "−$" : "$") + Math.abs(v), { "text-anchor": "end" });
+    });
+    let d = "", a = "";
+    const step = Math.max(1, Math.floor((N - WARM) / (iw * 1.5)));
+    for (let t = WARM; t < N; t += step) d += (d ? "L" : "M") + x(t).toFixed(1) + "," + y(R.cum[t]).toFixed(1);
+    d += "L" + x(N - 1).toFixed(1) + "," + y(R.cum[N - 1]).toFixed(1);
+    a = d + `L${x(N - 1).toFixed(1)},${y(0).toFixed(1)}L${x(WARM).toFixed(1)},${y(0).toFixed(1)}Z`;
+    el("path", { d: a, class: "ar-1" }, svg);
+    el("path", { d, class: "ln ln-1" }, svg);
+    const ex = x(N - 1), ey = y(R.cum[N - 1]);
+    el("circle", { cx: ex, cy: ey, r: 4, class: "mk" }, svg);
+    txt(svg, ex + 8, ey + 4, money(R.cum[N - 1], 0), { class: "t-strong" });
+    xAxis(svg, x, H, W);
+    const xh = el("line", { y1: M.t, y2: M.t + ih, class: "xh", visibility: "hidden" }, svg);
+    const mk = el("circle", { r: 4, class: "mk", visibility: "hidden" }, svg);
+    charts.p = { x, y, xh, mk, W, iw, val: t => R.cum[t] };
+  }
+
+  /* ---------------- shared crosshair + tooltip ---------------- */
+  function tipRow(key, value, label) {
+    const r = document.createElement("div"); r.className = "tip-r";
+    const k = document.createElement("span"); k.className = "tip-k" + (key ? "" : " none");
+    const b = document.createElement("b"); b.textContent = value;
+    const i = document.createElement("i"); i.textContent = label;
+    r.append(k, b, i);
+    return r;
+  }
+  function showHover(t, anchorChart) {
+    t = Math.max(WARM, Math.min(N - 1, Math.round(t)));
+    state.hover = t;
+    const R = state.R;
+    ["z", "p"].forEach(k => {
+      const c = charts[k]; if (!c) return;
+      const px = c.x(t);
+      c.xh.setAttribute("x1", px); c.xh.setAttribute("x2", px); c.xh.setAttribute("visibility", "visible");
+      c.mk.setAttribute("cx", px); c.mk.setAttribute("cy", c.y(c.val(t))); c.mk.setAttribute("visibility", "visible");
+    });
+    tip.textContent = "";
+    const h = document.createElement("div"); h.className = "tip-h"; h.textContent = dayLabel(t);
+    const side = R.pos[t] === 1 ? "Long spread" : R.pos[t] === -1 ? "Short spread" : "Flat";
+    tip.append(h, tipRow(true, fmt(R.z[t], 2), "z-score"), tipRow(true, money(R.cum[t], 1), "cum. PnL /bbl"), tipRow(false, side, "position"), tipRow(false, state.P.beta[t].toFixed(2), "hedge β"));
+    tip.hidden = false;
+    const host = anchorChart || cz;
+    const c = host === cp ? charts.p : charts.z;
+    const hostRect = host.getBoundingClientRect(), mainRect = labMain.getBoundingClientRect();
+    const px = hostRect.left - mainRect.left + c.x(t);
+    const tw = tip.offsetWidth;
+    let left = px + 14;
+    if (left + tw > labMain.clientWidth - 8) left = px - tw - 14;
+    tip.style.left = Math.max(8, left) + "px";
+    tip.style.top = (hostRect.top - mainRect.top + 8) + "px";
+  }
+  function hideHover() {
+    state.hover = null;
+    tip.hidden = true;
+    ["z", "p"].forEach(k => { const c = charts[k]; if (c) { c.xh.setAttribute("visibility", "hidden"); c.mk.setAttribute("visibility", "hidden"); } });
+  }
+  [cz, cp].forEach(host => {
+    host.addEventListener("pointermove", e => {
+      const c = host === cp ? charts.p : charts.z;
+      const r = host.getBoundingClientRect();
+      const px = e.clientX - r.left;
+      const t = ((px - M.l) / c.iw) * (N - 1);
+      if (t < WARM - 20 || px > M.l + c.iw + 4) { hideHover(); return; }
+      showHover(t, host);
+    });
+    host.addEventListener("pointerleave", hideHover);
+    host.addEventListener("focus", () => showHover(state.hover ?? N - 1, host));
+    host.addEventListener("blur", hideHover);
+    host.addEventListener("keydown", e => {
+      const stepK = e.shiftKey ? 63 : 5;
+      if (e.key === "ArrowRight") { e.preventDefault(); showHover((state.hover ?? WARM) + stepK, host); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); showHover((state.hover ?? N - 1) - stepK, host); }
+      else if (e.key === "Home") { e.preventDefault(); showHover(WARM, host); }
+      else if (e.key === "End") { e.preventDefault(); showHover(N - 1, host); }
+      else if (e.key === "Escape") { host.blur(); }
+    });
+  });
+
+  /* ---------------- stats + blotter ---------------- */
+  function renderStats() {
+    const R = state.R;
+    $("#st-sharpe").textContent = fmt(R.sharpe, 2);
+    $("#st-pnl").textContent = money(R.total, 0);
+    $("#st-pnl").classList.toggle("neg", R.total < 0);
+    $("#st-trades").textContent = String(R.trades.length);
+    $("#st-win").textContent = R.trades.length ? Math.round(100 * R.wins / R.trades.length) + "%" : "–";
+    $("#st-dd").textContent = money(-R.dd, 0);
+    $("#st-beta").textContent = isNaN(R.avgBeta) ? "–" : R.avgBeta.toFixed(2);
+    $("#seed-o").textContent = "#" + state.seed;
+    $("#sim-tag").textContent = "Path #" + state.seed;
+    const tb = $("#blotter");
+    tb.textContent = "";
+    const rows = R.trades.slice().reverse();
+    rows.forEach((tr, i) => {
+      const r = document.createElement("tr");
+      const cells = [
+        String(R.trades.length - i),
+        null,
+        dayLabel(tr.t0),
+        tr.open ? "open" : dayLabel(tr.t1),
+        String(tr.t1 - tr.t0),
+        fmt(tr.z0, 2),
+        tr.b.toFixed(2),
+        (tr.pnl >= 0 ? "+" : "−") + Math.abs(tr.pnl).toFixed(2)
+      ];
+      cells.forEach((v, j) => {
+        const td = document.createElement("td");
+        if (j === 1) {
+          td.className = "tl";
+          const s = document.createElement("span");
+          s.className = "side-tag " + (tr.side === 1 ? "long" : "short");
+          s.textContent = tr.side === 1 ? "Long" : "Short";
+          td.appendChild(s);
+        } else td.textContent = v;
+        if (j === 7) td.className = tr.pnl >= 0 ? "gain" : "loss";
+        r.appendChild(td);
+      });
+      tb.appendChild(r);
+    });
+    $("#blotter-count").textContent = `${R.trades.length} trades · newest first`;
+  }
+
+  function runLab(resim) {
+    if (resim || !state.P) state.P = simulate(state.seed);
+    state.R = backtest(state.P, state.entry, state.exit, state.look);
+    drawZ(); drawP(); renderStats();
+    if (state.hover != null && !tip.hidden) showHover(state.hover);
+  }
+  let raf = 0;
+  function schedule(resim) { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => runLab(resim)); }
+  function reseed() { state.seed += 1; schedule(true); }
+  $("#reseed").addEventListener("click", reseed);
+  const entryI = $("#entry"), exitI = $("#exit"), lookI = $("#look");
+  function readControls() {
+    state.entry = +entryI.value;
+    let ex = +exitI.value;
+    if (ex >= state.entry) { ex = Math.max(0, +(state.entry - 0.1).toFixed(1)); exitI.value = ex; }
+    state.exit = ex;
+    state.look = +lookI.value;
+    $("#entry-o").textContent = state.entry.toFixed(1);
+    $("#exit-o").textContent = state.exit.toFixed(1);
+    $("#look-o").textContent = state.look + " days";
+  }
+  [entryI, exitI, lookI].forEach(i => i.addEventListener("input", () => { readControls(); schedule(false); }));
+
+  /* ---------------- timeline ---------------- */
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const mi = (y, m) => (y - 2023) * 12 + (m - 1);
+  const ITEMS = [
+    { name: "Koios", sub: "Quantitative Analyst Intern", cat: "work", s: [2026, 5], e: [2026, 8] },
+    { name: "Cigarette tax study", sub: "Econometrics, Stata", cat: "research", s: [2026, 2], e: [2026, 4] },
+    { name: "Pedalisa Art Studios", sub: "Manager and Financial Analyst", cat: "work", s: [2025, 6], e: [2026, 8] },
+    { name: "Tesla 3-statement model", sub: "Financial modeling, Excel", cat: "research", s: [2025, 5], e: [2025, 6] },
+    { name: "Bright Fortune", sub: "Customer Service", cat: "work", s: [2023, 11], e: [2025, 8] },
+    { name: "UT Austin, BA Economics", sub: "Expected graduation", cat: "edu", ms: [2028, 5] }
+  ];
+  const ct = $("#chart-t");
+  const tlTip = document.createElement("div");
+  tlTip.className = "tip"; tlTip.hidden = true;
+  function drawT() {
+    ct.textContent = "";
+    const scroller = ct.parentElement;
+    const narrow = scroller.clientWidth < 600;
+    const W = narrow ? scroller.clientWidth : Math.max(640, scroller.clientWidth);
+    const LBL = narrow ? 0 : (W < 760 ? 170 : 210), R = narrow ? 8 : 24, T = 18, ROW = narrow ? 54 : 40, B = 28;
+    const H = T + ROW * ITEMS.length + B;
+    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, ct);
+    ct.style.width = W + "px";
+    const d0 = mi(2023, 10), d1 = mi(2028, 8);
+    const x = m => LBL + ((m - d0) / (d1 - d0)) * (W - LBL - R);
+    for (let yr = 2024; yr <= 2028; yr++) {
+      el("line", { x1: x(mi(yr, 1)), x2: x(mi(yr, 1)), y1: T, y2: H - B, class: "gl" }, svg);
+      txt(svg, x(mi(yr, 1)), H - 9, String(yr), { "text-anchor": "middle" });
+    }
+    el("line", { x1: LBL, x2: W - R, y1: H - B, y2: H - B, class: "ax" }, svg);
+    const today = mi(2026, 10) + 4 / 31;
+    el("line", { x1: x(today), x2: x(today), y1: T - 4, y2: H - B, class: "today-l" }, svg);
+    ITEMS.forEach((it, i) => {
+      const top = T + ROW * i;
+      const cy = narrow ? top + 36 : top + ROW / 2;
+      if (i > 0) el("line", { x1: 0, x2: W - R, y1: top, y2: top, class: "gl" }, svg);
+      if (narrow) {
+        const t1 = txt(svg, 0, top + 16, it.name, { class: "t-row" });
+        const sp = document.createElementNS(SVGNS, "tspan");
+        sp.setAttribute("class", "t-row-sub"); sp.setAttribute("dx", "8"); sp.textContent = it.sub;
+        t1.appendChild(sp);
+      } else {
+        txt(svg, 0, cy - 2, it.name, { class: "t-row" });
+        txt(svg, 0, cy + 13, it.sub, { class: "t-row-sub" });
+      }
+      const g = el("g", { class: "bar-g", tabindex: "0", role: "img" }, svg);
+      let label, x0, x1;
+      if (it.ms) {
+        const mx = x(mi(it.ms[0], it.ms[1]) + 0.5);
+        el("rect", { x: mx - 14, y: cy - 14, width: 28, height: 28, fill: "transparent", class: "bar-hit" }, g);
+        el("rect", { x: mx - 6, y: cy - 6, width: 12, height: 12, transform: `rotate(45 ${mx} ${cy})`, class: "bar-r c-edu" }, g);
+        txt(svg, mx - 12, cy + 4, "May 2028", { "text-anchor": "end" });
+        label = `${it.name}. ${it.sub}: ${MONTHS[it.ms[1] - 1]} ${it.ms[0]}`;
+        x0 = x1 = mx;
+      } else {
+        x0 = x(mi(it.s[0], it.s[1])); x1 = x(mi(it.e[0], it.e[1]) + 1);
+        const months = mi(it.e[0], it.e[1]) - mi(it.s[0], it.s[1]) + 1;
+        el("rect", { x: x0 - 4, y: cy - 14, width: x1 - x0 + 8, height: 28, fill: "transparent", class: "bar-hit" }, g);
+        el("rect", { x: x0 + 1, y: cy - 7, width: Math.max(4, x1 - x0 - 2), height: 14, rx: 3, class: "bar-r c-" + it.cat }, g);
+        label = `${it.name}, ${it.sub}. ${MONTHS[it.s[1] - 1]} ${it.s[0]} to ${MONTHS[it.e[1] - 1]} ${it.e[0]}, ${months} months`;
+        it._months = months;
+      }
+      g.setAttribute("aria-label", label);
+      const show = () => {
+        tlTip.textContent = "";
+        const h = document.createElement("div"); h.className = "tip-h"; h.textContent = it.ms ? "Milestone" : (it.cat === "work" ? "Work" : "Research");
+        const n = document.createElement("div"); n.style.fontWeight = "650"; n.textContent = it.name;
+        const s = document.createElement("div"); s.style.color = "var(--fg-2)"; s.textContent = it.sub;
+        const w = document.createElement("div"); w.style.cssText = "margin-top:6px;font:500 11px var(--font-mono);color:var(--fg-2)";
+        w.textContent = it.ms ? `${MONTHS[it.ms[1] - 1]} ${it.ms[0]}` : `${MONTHS[it.s[1] - 1]} ${it.s[0]} – ${MONTHS[it.e[1] - 1]} ${it.e[0]} · ${it._months} mo`;
+        tlTip.append(h, n, s, w);
+        tlTip.hidden = false;
+        const host = ct.closest(".pb");
+        const hr = host.getBoundingClientRect(), cr = ct.getBoundingClientRect();
+        let left = cr.left - hr.left + (x0 + x1) / 2 - tlTip.offsetWidth / 2;
+        left = Math.max(8, Math.min(left, host.clientWidth - tlTip.offsetWidth - 8));
+        tlTip.style.left = left + "px";
+        tlTip.style.top = (cr.top - hr.top + cy - tlTip.offsetHeight - 14) + "px";
+      };
+      g.addEventListener("pointerenter", show);
+      g.addEventListener("focus", show);
+      g.addEventListener("pointerleave", () => { tlTip.hidden = true; });
+      g.addEventListener("blur", () => { tlTip.hidden = true; });
+    });
+    txt(svg, x(today) + 5, 11, "Today", { class: "t-acc" });
+  }
+  ct.closest(".pb").style.position = "relative";
+  ct.closest(".pb").appendChild(tlTip);
+
+  /* ---------------- boot + resize ---------------- */
+  readControls();
+  runLab(true);
+  drawT();
+  let lastW = 0;
+  const ro = new ResizeObserver(() => {
+    const w = cz.clientWidth;
+    if (Math.abs(w - lastW) < 2) return;
+    lastW = w;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => { drawZ(); drawP(); drawT(); hideHover(); });
+  });
+  ro.observe(labMain);
+  ro.observe(ct.parentElement);
+
+  const hash = (location.hash || "").slice(1);
+  if (hash && document.getElementById(hash)) setTimeout(() => document.getElementById(hash).scrollIntoView({ block: "start" }), 60);
+})();
+</script>
+</body>
+</html>
